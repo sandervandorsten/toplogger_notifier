@@ -1,6 +1,7 @@
 """This script can be used to notify you when a slot comes available at your favorite gym.
 Update the settings in config.py.
 """
+import sys
 from datetime import datetime
 from datetime import timedelta
 import logging
@@ -25,6 +26,25 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 
+def init_notification(telegram: TelegramBot, queue: List[QueueItem]):
+    message = ""
+    for item in queue:
+        str_format = '%A %d %B %H:%M'
+        message += f"Searching for available slots in {item.gym.name} \n for" \
+                   f"{item.period.start.strftime(str_format)} - {item.period.end.strftime(str_format)}\n"
+    logging.info(f'init message:\n\t{message}')
+
+    if not config.DEBUG:
+        telegram.updater.bot.send_message(chat_id=config.CHAT_ID, text=message)
+
+
+def exit_notification(telegram: TelegramBot):
+    message = "Shutting down."
+    logging.info(f'exit message:\n\t{message}')
+    if not config.DEBUG:
+        telegram.updater.bot.send_message(chat_id=config.CHAT_ID, text=message)
+
+
 def notify(telegram: TelegramBot, item: QueueItem, slots: List[Slot]):
     """
     Send Telegram notification for available slots.
@@ -32,17 +52,16 @@ def notify(telegram: TelegramBot, item: QueueItem, slots: List[Slot]):
     if not slots:
         return
 
-    message = f"Slot(s) available at {item.gym['name']} on {slots[0].date.strftime('%A %d %B')}"
+    message = f"Slot(s) available at {item.gym.name} on {slots[0].date.strftime('%A %d %B')}"
     for slot in slots:
-        message += f"\n -> {slot.start_at.strftime('%H:%M')} - {slot.end_at.strftime('%H:%M')}"
-    if config.DEBUG:
-        logging.debug(f'Notify message:\n\t{message}')
-    else:
-        # TODO: get config.CHAT_ID from telegram-bot
+        message += f"\n -> {slot.start_at.strftime('%H:%M')} - {slot.end_at.strftime('%H:%M')}: {slot.spots_available} spot(s)"
+
+    logging.info(f'Notify message:\n\t{message}')
+    if not config.DEBUG:
         telegram.updater.bot.send_message(chat_id=config.CHAT_ID, text=message)
 
 
-def check(top_logger: TopLogger, telegram: TelegramBot, queue: Dict[str, QueueItem]) -> int:
+def check(top_logger: TopLogger, telegram: TelegramBot, queue: List[QueueItem]) -> int:
     """
     Check for available slot(s) based on given items in queue.
     """
@@ -91,7 +110,12 @@ def main():
     telegram_bot.set_queue(queue)
 
     # start schedule
-    repeat(top_logger, telegram_bot, queue, config.INTERVAL)
+    init_notification(telegram_bot, queue)
+    try:
+        repeat(top_logger, telegram_bot, queue, config.INTERVAL)
+    except KeyboardInterrupt:
+        exit_notification(telegram_bot)
+        sys.exit(0)
 
 
 if __name__ == '__main__':

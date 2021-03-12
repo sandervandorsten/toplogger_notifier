@@ -29,7 +29,10 @@ class Period:
         The start and end strings are converted to datetime objects by dateutil.parser.parse
         """
         tzinfo = gettz()
-        return cls(parse(start).replace(tzinfo=tzinfo), parse(end).replace(tzinfo=tzinfo))
+        start = parse(start).replace(tzinfo=tzinfo)
+        end = parse(end).replace(tzinfo=tzinfo)
+        assert end > start
+        return cls(start, end)
 
     def __str__(self):
         """String representations of this dataclass"""
@@ -44,7 +47,7 @@ class QueueItem:
     An item consists of a gym and a period. The property handled is set when a notification is sent
     for an available slot.
     """
-    gym: dict
+    gym: Gym
     period: Period
     handled: bool = False
 
@@ -71,6 +74,7 @@ class Gym:
     id: int
     name: str
     slug: str
+    area_id: int
 
 
 @dataclass_json

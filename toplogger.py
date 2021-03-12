@@ -9,6 +9,7 @@ import requests
 from models import Period
 from models import ReservationArea
 from models import Slot
+from models import Gym
 
 
 class TopLogger:
@@ -18,7 +19,7 @@ class TopLogger:
     """
 
     def __init__(self, user: Optional[str] = None, password: Optional[str] = None,
-                 gym: Optional[Dict[str, any]] = None):
+                 gym: Gym = None):
         self.user = user
         self.password = password
         self.host = 'https://api.toplogger.nu'
@@ -45,10 +46,10 @@ class TopLogger:
     def available_slots(self, period: Period) -> List[Slot]:
         """Get available slots in given period."""
         if not self.gym:
-            raise Exception('Gym cannot be None')
+            raise ValueError('Gym cannot be None')
 
-        slots = self._get(f"gyms/{self.gym['id']}/slots?date={period.start.date()}&"
-                          f"reservation_area_id={self.gym['area_id']}")
+        slots = self._get(f"gyms/{self.gym.id}/slots?date={period.start.date()}&"
+                          f"reservation_area_id={self.gym.area_id}")
         available_slots = []
         for slot in slots:
             slot = Slot.from_dict(slot)  # pylint: disable=maybe-no-member
@@ -60,8 +61,8 @@ class TopLogger:
     def reservation_areas(self) -> ReservationArea:
         """Get reservation_areas."""
         if not self.gym:
-            raise Exception('Gym cannot be None')
-        areas = self._get(f"gyms/{self.gym['id']}/reservation_areas")
+            raise ValueError('Gym cannot be None')
+        areas = self._get(f"gyms/{self.gym.id}/reservation_areas")
         return areas
 
     def gyms(self):
