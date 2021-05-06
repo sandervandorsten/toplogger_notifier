@@ -1,7 +1,7 @@
 """All class types used in this script."""
 from __future__ import annotations
 
-from datetime import datetime
+import datetime as dt
 
 from dataclasses import dataclass
 from dataclasses import field
@@ -19,8 +19,8 @@ class Period:
 
     A period has a start and an end date, that's all.
     """
-    start: datetime
-    end: datetime
+    start: dt.datetime
+    end: dt.datetime
 
     @classmethod
     def from_strings(cls, start: str, end: str) -> Period:
@@ -60,7 +60,7 @@ class QueueItem:
 
     def set_handled(self, handled):
         """Set handled property."""
-        self.handled = handled
+        self.handled = False
 
 
 @dataclass_json(undefined=Undefined.EXCLUDE)
@@ -99,13 +99,14 @@ class Slot:
     Only a few properties are saved others aren't needed for this script.
     """
     id: int
-    start_at: datetime = field(metadata=config(encoder=datetime.isoformat, decoder=parse))
-    end_at: datetime = field(metadata=config(encoder=datetime.isoformat, decoder=parse))
+    start_at: dt.datetime = field(metadata=config(encoder=dt.datetime.isoformat, decoder=parse))
+    end_at: dt.datetime = field(metadata=config(encoder=dt.datetime.isoformat, decoder=parse))
     spots: int
     spots_booked: int
+    require_password: bool
 
     @property
-    def date(self) -> datetime:
+    def date(self) -> dt.date:
         """The date of this slot, based on the start datetime."""
         return self.start_at.date()
 

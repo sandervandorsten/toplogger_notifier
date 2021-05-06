@@ -18,8 +18,12 @@ class TopLogger:
     Handle communication with TopLogger REST API.
     """
 
-    def __init__(self, user: Optional[str] = None, password: Optional[str] = None,
-                 gym: Gym = None):
+    def __init__(
+        self,
+        user: Optional[str] = None,
+        password: Optional[str] = None,
+        gym: Gym = None
+    ):
         self.user = user
         self.password = password
         self.host = 'https://api.toplogger.nu'
@@ -53,8 +57,12 @@ class TopLogger:
         available_slots = []
         for slot in slots:
             slot = Slot.from_dict(slot)  # pylint: disable=maybe-no-member
-            if (slot.start_at >= period.start and slot.end_at <= period.end
-                    and slot.spots > slot.spots_booked):
+            if (
+                    slot.start_at >= period.start and
+                    slot.end_at <= period.end and
+                    slot.spots > slot.spots_booked and
+                    not slot.require_password
+            ):
                 available_slots.append(slot)
         return available_slots
 

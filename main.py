@@ -30,7 +30,7 @@ def init_notification(telegram: TelegramBot, queue: List[QueueItem]):
     message = ""
     for item in queue:
         str_format = '%A %d %B %H:%M'
-        message += f"Searching for available slots in {item.gym.name} \n for" \
+        message += f"Searching for available slots in {item.gym.name} for " \
                    f"{item.period.start.strftime(str_format)} - {item.period.end.strftime(str_format)}\n"
     logging.info(f'init message:\n\t{message}')
 
@@ -71,8 +71,7 @@ def check(top_logger: TopLogger, telegram: TelegramBot, queue: List[QueueItem]) 
 
     available = 0
     for item in queue:
-        # TODO: find out if the 10 days check is valid for all gyms
-        if now < item.period.start <= (now + timedelta(10)) and not item.handled:
+        if not item.handled:
             top_logger.gym = item.gym
             available_slots = top_logger.available_slots(item.period)
             if available_slots:
@@ -91,7 +90,7 @@ def repeat(top_logger: TopLogger, telegram: TelegramBot, queue: List[QueueItem],
     logging.info(f'  --  FINISH: found {available} new slots')
 
     if interval != -1:
-        minimal_interval = 1 if config.DEBUG else 30
+        minimal_interval = 1 if config.DEBUG else 10
         interval = max(minimal_interval, interval)
         time.sleep(interval)
         repeat(top_logger, telegram, queue, interval)
