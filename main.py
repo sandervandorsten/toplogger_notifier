@@ -25,6 +25,8 @@ except ImportError:
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+logger = logging.getLogger(__name__)
+
 
 def init_notification(telegram: TelegramBot, queue: List[QueueItem]):
     message = ""
@@ -32,7 +34,7 @@ def init_notification(telegram: TelegramBot, queue: List[QueueItem]):
         str_format = '%A %d %B %H:%M'
         message += f"Searching for available slots in {item.gym.name} for " \
                    f"{item.period.start.strftime(str_format)} - {item.period.end.strftime(str_format)}\n"
-    logging.info(f'init message:\n\t{message}')
+    logger.info(f'init message:\n\t{message}')
 
     if not config.DEBUG:
         telegram.updater.bot.send_message(chat_id=config.CHAT_ID, text=message)
@@ -40,7 +42,7 @@ def init_notification(telegram: TelegramBot, queue: List[QueueItem]):
 
 def exit_notification(telegram: TelegramBot):
     message = "Shutting down."
-    logging.info(f'exit message:\n\t{message}')
+    logger.info(f'exit message:\n\t{message}')
     if not config.DEBUG:
         telegram.updater.bot.send_message(chat_id=config.CHAT_ID, text=message)
 
@@ -56,7 +58,7 @@ def notify(telegram: TelegramBot, item: QueueItem, slots: List[Slot]):
     for slot in slots:
         message += f"\n -> {slot.start_at.strftime('%H:%M')} - {slot.end_at.strftime('%H:%M')}: {slot.spots_available} spot(s)"
 
-    logging.info(f'Notify message:\n\t{message}')
+    logger.info(f'Notify message:\n\t{message}')
     if not config.DEBUG:
         telegram.updater.bot.send_message(chat_id=config.CHAT_ID, text=message)
 
@@ -85,15 +87,13 @@ def repeat(top_logger: TopLogger, telegram: TelegramBot, queue: List[QueueItem],
     """
     Run check each INTERVAL seconds.
     """
-    logging.info(f'  --  START: check for {len(queue)} slots')
+    logger.info(f'  --  START: check for {len(queue)} slots')
     available = check(top_logger, telegram, queue)
-    logging.info(f'  --  FINISH: found {available} new slots')
+    logger.info(f'  --  FINISH: found {available} new slots')
 
-    if interval != -1:
-        minimal_interval = 1 if config.DEBUG else 10
-        interval = max(minimal_interval, interval)
-        time.sleep(interval)
-        repeat(top_logger, telegram, queue, interval)
+    interval = max(1, interval)
+    time.sleep(interval)
+    repeat(top_logger, telegram, queue, interval)
 
 
 def main():

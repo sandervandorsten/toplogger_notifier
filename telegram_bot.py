@@ -41,13 +41,14 @@ class TelegramBot:
     @staticmethod
     def status(update, context):
         """Command handler to sends a messages with the current status."""
-        last_run = context.bot_data['last_run']
-        delta_minutes, _ = divmod((datetime.now(gettz()) - last_run).seconds, 60)
-        msg = f"Last run: {delta_minutes} minutes " \
-              f"ago on {last_run.strftime('%y-%m-%d %H:%M')}\n\n" \
-              f"Searching for a slot in the following periods:\n"
-        msg += '\n'.join(map(str, context.bot_data['queue']))
-        context.bot.send_message(chat_id=update.effective_chat.id, text=msg)
+        # last_run = context.bot_data['last_run']
+        # delta_minutes, _ = divmod((datetime.now(gettz()) - last_run).seconds, 60)
+        # msg = f"Last run: {delta_minutes} minutes " \
+        #       f"ago on {last_run.strftime('%y-%m-%d %H:%M')}\n\n" \
+        #       f"Searching for a slot in the following periods:\n"
+        # msg += '\n'.join(map(str, context.bot_data['queue']))
+        context.bot.send_message(chat_id=update.effective_chat.id, text='hi')
+        # context.bot.send_message(chat_id=update.effective_chat.id, text=msg)
 
     @staticmethod
     def reset(update, context):
